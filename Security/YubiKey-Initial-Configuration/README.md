@@ -6,6 +6,7 @@
 - [YubiKey Manager CLI Installation](https://docs.yubico.com/software/yubikey/tools/ykman/Install_ykman.html)
 - [FIDO Commands](https://docs.yubico.com/software/yubikey/tools/ykman/FIDO_Commands.html)
 - [PIV Commands](https://docs.yubico.com/software/yubikey/tools/ykman/PIV_Commands.html)
+- [YubiKey Technical Manual: FIDO Specifics](https://docs.yubico.com/hardware/yubikey/yk-tech-manual/yk5-apps-fido.html)
 - [Yubico End-of-Life Products](https://www.yubico.com/support/terms-conditions/yubico-end-of-life-policy/eol-products/)
 
 > **Notice:** The YubiKey Manager GUI reached End of Life on February 19, 2026. This guide uses the supported `ykman` command-line interface (CLI).
@@ -89,13 +90,56 @@ ykman piv info
 
 ---
 
+## Reset the FIDO2 Application to Factory Settings
+
+A FIDO2 reset returns the FIDO applications to their factory state. Use it when the FIDO2 PIN is forgotten or blocked, or when the key is being reissued.
+
+> **Warning:** A reset permanently deletes all FIDO credentials on the YubiKey, including passkeys and FIDO U2F credentials, and removes the FIDO2 PIN. Accounts that use this key for sign-in will no longer accept it until it is registered again. Confirm that each affected account has a backup sign-in method or a backup security key before continuing.
+>
+> The FIDO2 reset does **not** affect the PIV application. The PIV PIN, PUK, management key, and certificates remain unchanged.
+
+1. Open **Command Prompt** or **PowerShell** as Administrator.
+
+2. Review the current FIDO2 status:
+
+```powershell
+ykman fido info
+```
+
+3. Run the reset command:
+
+```powershell
+ykman fido reset
+```
+
+4. Type `y` to confirm the warning when prompted.
+
+5. If prompted, remove and reinsert the YubiKey. The reset must happen right after the YubiKey is inserted.
+
+6. Touch the YubiKey when it blinks to complete the reset.
+
+7. Verify the reset:
+
+```powershell
+ykman fido info
+```
+
+Confirm that the output shows no FIDO2 PIN is set.
+
+> If the reset fails because too much time passed after inserting the YubiKey, run `ykman fido reset` again and touch the key promptly after reinserting it.
+
+After the reset, set a new FIDO2 PIN before using the YubiKey again.
+
+---
+
 ## Configure the FIDO2 PIN
 
 The FIDO2 PIN protects passkeys, passwordless sign-in, and supported multi-factor authentication workflows.
 
 - The FIDO2 PIN must be at least 4 alphanumeric characters.
 - Some YubiKey models or enterprise policies may require a longer PIN.
-- A new YubiKey may use `123456` as the default FIDO2 PIN.
+- YubiKeys ship with no FIDO2 PIN set, and a FIDO2 reset also removes the PIN. Some keys issued through YubiKey as a Service may come with a preset PIN that must be changed on first use.
+- `123456` is the default **PIV** PIN, not a FIDO2 PIN.
 
 > Characters do not display while entering a PIN. This is expected behavior.
 
@@ -105,7 +149,7 @@ The FIDO2 PIN protects passkeys, passwordless sign-in, and supported multi-facto
 ykman fido access change-pin
 ```
 
-2. Enter the current FIDO2 PIN when prompted.
+2. If a FIDO2 PIN is already set, enter the current FIDO2 PIN when prompted. If no PIN is set, `ykman` prompts only for the new PIN.
 
 3. Enter the new FIDO2 PIN.
 
